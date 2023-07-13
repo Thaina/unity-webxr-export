@@ -533,6 +533,35 @@ namespace WebXR
       vec3.z = sharedArray[index + 2];
     }
 
+    static void ReadFrom(float[] array,ref Vector2 value,ref index)
+    {
+      value.x = array[index++];
+      value.y = array[index++];
+    }
+
+    static void ReadFrom(float[] array,ref Vector3 value,ref index)
+    {
+      value.x = array[index++];
+      value.y = array[index++];
+      value.y = array[index++];
+    }
+
+    static void ReadFrom(float[] array,ref Vector4 value,ref index)
+    {
+      value.x = array[index++];
+      value.y = array[index++];
+      value.y = array[index++];
+      value.w = array[index++];
+    }
+
+    static void ReadFrom(float[] array,ref Quaternion value,ref index)
+    {
+      value.x = array[index++];
+      value.y = array[index++];
+      value.y = array[index++];
+      value.w = array[index++];
+    }
+
     bool GetGamepadFromControllersArray(int controllerIndex, ref WebXRControllerData newControllerData)
     {
       int arrayPosition = controllerIndex * 34;
@@ -550,9 +579,9 @@ namespace WebXR
         return true;
       }
 
-      newControllerData.position = new Vector3(controllersArray[arrayPosition++], controllersArray[arrayPosition++], controllersArray[arrayPosition++]);
-      newControllerData.rotation = new Quaternion(controllersArray[arrayPosition++], controllersArray[arrayPosition++], controllersArray[arrayPosition++],
-          controllersArray[arrayPosition++]);
+      ReadFrom(controllersArray,ref newControllerData.position,ref index);
+      ReadFrom(controllersArray,ref newControllerData.rotation,ref index);
+
       newControllerData.trigger = controllersArray[arrayPosition++];
       newControllerData.triggerTouched = controllersArray[arrayPosition++] != 0;
       newControllerData.squeeze = controllersArray[arrayPosition++];
@@ -572,9 +601,9 @@ namespace WebXR
       if (controllersArray[arrayPosition] == 1)
       {
         controllersArray[arrayPosition++] = 2;
-        newControllerData.gripPosition = new Vector3(controllersArray[arrayPosition++], controllersArray[arrayPosition++], controllersArray[arrayPosition++]);
-        newControllerData.gripRotation = new Quaternion(controllersArray[arrayPosition++], controllersArray[arrayPosition++], controllersArray[arrayPosition++],
-            controllersArray[arrayPosition++]);
+        ReadFrom(controllersArray,ref newControllerData.gripPosition,ref index);
+        ReadFrom(controllersArray,ref newControllerData.gripRotation,ref index);
+
         Quaternion rotationOffset = Quaternion.Inverse(newControllerData.rotation);
         newControllerData.gripPosition = rotationOffset * (newControllerData.gripPosition - newControllerData.position);
         newControllerData.gripRotation = rotationOffset * newControllerData.gripRotation;

@@ -98,6 +98,7 @@ setTimeout(function () {
         this.profiles = [];
         this.updatedProfiles = 0;
 
+        /** @type {(index:Number) => Number} */
         this.setIndices = function(index) {
           this.frameIndex = index++;
           this.enabledIndex = index++;
@@ -132,7 +133,8 @@ setTimeout(function () {
           this.gripRotationXIndex = index++;
           this.gripRotationYIndex = index++;
           this.gripRotationZIndex = index++;
-          this.gripRotationWIndex = index;
+          this.gripRotationWIndex = index++;
+          return index;
         }
       }
     
@@ -246,10 +248,12 @@ setTimeout(function () {
       }
     
       function XRManager() {
+        /** @type {XRSession} */
         this.xrSession = null;
         this.viewerSpace = null;
         this.viewerHitTestSource = null;
         this.xrData = new XRData();
+        /** @type {HTMLCanvasElement} */
         this.canvas = null;
         this.ctx = null;
         this.gameModule = null;
@@ -654,7 +658,7 @@ setTimeout(function () {
         quaternion[2] *= Math.sign( quaternion[2] * ( matrix[offset+1] - matrix[offset+4] ) );
       }
       
-      XRManager.prototype.getXRControllersData = function(frame, inputSources, refSpace, xrData) {
+      XRManager.prototype.getXRControllersData = function(frame, /** @type {XRInputSourceArray} */inputSources, refSpace, xrData) {
         Module.HEAPF32[xrData.handLeft.frameIndex] = xrData.frameNumber; // XRHandData.frame
         Module.HEAPF32[xrData.handRight.frameIndex] = xrData.frameNumber; // XRHandData.frame
         Module.HEAPF32[xrData.handLeft.enabledIndex] = 0; // XRHandData.enabled
@@ -847,7 +851,7 @@ setTimeout(function () {
         }
       }
     
-      XRManager.prototype.onSessionStarted = function (session) {
+      XRManager.prototype.onSessionStarted = function (/** @type {XRSession} */session) {
         var glLayer = new XRWebGLLayer(session, this.ctx);
         session.updateRenderState({ baseLayer: glLayer });
         
@@ -873,8 +877,8 @@ setTimeout(function () {
           session.addEventListener('squeezeend', this.onInputEvent);
           session.addEventListener('visibilitychange', this.onSessionVisibilityEvent);
     
-          this.xrData.controllerA.setIndices(Module.ControllersArrayOffset);
-          this.xrData.controllerB.setIndices(Module.ControllersArrayOffset + 34);
+          var lastControllerIndex = this.xrData.controllerA.setIndices(Module.ControllersArrayOffset);
+          this.xrData.controllerB.setIndices(Module.ControllersArrayOffset + lastControllerIndex);
           this.xrData.handLeft.setIndices(Module.HandsArrayOffset);
           this.xrData.handRight.setIndices(Module.HandsArrayOffset + 205);
           this.xrData.viewerHitTestPose.setIndices(Module.ViewerHitTestPoseArrayOffset);
@@ -906,7 +910,7 @@ setTimeout(function () {
         });
       }
     
-      XRManager.prototype.animate = function (frame) {
+      XRManager.prototype.animate = function (/** @type {XRFrame} */frame) {
         var session = frame.session;
         if (!session) {
           return this.didNotifyUnity;
